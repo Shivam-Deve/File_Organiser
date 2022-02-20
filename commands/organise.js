@@ -23,7 +23,7 @@ let types = {
   programs: ["java", "py", "js", "class", "json"]
 };
 
-function organiseFn(option) {
+function organiseFn(option, ifCut) {
   dirPath = process.cwd();
   let doesExist = fs.existsSync(dirPath);
   if (doesExist) {
@@ -32,21 +32,21 @@ function organiseFn(option) {
       fs.mkdirSync(destPath);
     }
     if (option != undefined) {
-      organiseFnHelperByExtention(dirPath, destPath, option);
+      organiseFnHelperByExtention(dirPath, destPath, option, ifCut);
     } else {
-      organiseFnHelper(dirPath, destPath);
+      organiseFnHelper(dirPath, destPath, ifCut);
     }
   }
 }
 
-function organiseFnHelperByExtention(src, dest, opt) {
+function organiseFnHelperByExtention(src, dest, opt, ifCut) {
   let childFiles = fs.readdirSync(src);
   for (let i = 0; i < childFiles.length; i++) {
     let childAddress = path.join(src, childFiles[i]);
     let isFile = fs.lstatSync(childAddress).isFile();
     if (isFile) {
       if (path.extname(childAddress) == opt) {
-        sendFile(childAddress, dest, opt.slice(1));
+        sendFile(childAddress, dest, opt.slice(1), ifCut);
       }
     }
   }
@@ -59,12 +59,12 @@ function organiseFnHelper(src, dest) {
     let isFile = fs.lstatSync(childAddress).isFile();
     if (isFile) {
       let typ = getCatagory(childAddress);
-      sendFile(childAddress, dest, typ);
+      sendFile(childAddress, dest, typ, ifCut);
     }
   }
 }
 
-function sendFile(src, dest, catagory) {
+function sendFile(src, dest, catagory, ifCut) {
   let catagoryPath = path.join(dest, catagory);
   if (!fs.existsSync(catagoryPath)) {
     fs.mkdirSync(catagoryPath);
@@ -72,6 +72,9 @@ function sendFile(src, dest, catagory) {
   let fileName = path.basename(src);
   let destPath = path.join(catagoryPath, fileName);
   fs.copyFileSync(src, destPath);
+  if (ifCut) {
+    fs.unlinkSync(src);
+  }
 }
 
 function getCatagory(name) {
